@@ -1,4 +1,4 @@
-'''
+"""
     7-Eleven Python implementation.
 
     Copyright (C) 2019  Freyta
@@ -12,27 +12,33 @@
     GNU General Public License for more details.
     You should have received a copy of the GNU General Public License
     along with this program. If not, see <https://www.gnu.org/licenses/>.
-'''
+"""
+import time
 
-from . import *
+import requests
+from API_REQUESTS.api import ANDROID_VERSION, APP_VERSION, BASE_URL, DEVICE_ID, generateTssa
+
 
 def listFuellock(deviceSecret, accessToken):
 
     tssa = generateTssa(BASE_URL + "FuelLock/List", "GET", "", accessToken)
 
-    headers = {'User-Agent':'Apache-HttpClient/UNAVAILABLE (java 1.4)',
-               'Connection':'Keep-Alive',
-               'Host':'711-goodcall.api.tigerspike.com',
-               'Authorization':'%s' % tssa,
-               'X-OsVersion':ANDROID_VERSION,
-               'X-OsName':'Android',
-               'X-DeviceID':DEVICE_ID,
-               'X-AppVersion':APP_VERSION,
-               'X-DeviceSecret':deviceSecret}
+    headers = {
+        "User-Agent": "Apache-HttpClient/UNAVAILABLE (java 1.4)",
+        "Connection": "Keep-Alive",
+        "Host": "711-goodcall.api.tigerspike.com",
+        "Authorization": "%s" % tssa,
+        "X-OsVersion": ANDROID_VERSION,
+        "X-OsName": "Android",
+        "X-DeviceID": DEVICE_ID,
+        "X-AppVersion": APP_VERSION,
+        "X-DeviceSecret": deviceSecret,
+    }
 
     response = requests.get(BASE_URL + "FuelLock/List", headers=headers)
 
-    return(response.content)
+    return response.content
+
 
 def startLockinSession(deviceSecret, accessToken, locLat, locLong):
 
@@ -41,25 +47,27 @@ def startLockinSession(deviceSecret, accessToken, locLat, locLong):
 
     tssa = generateTssa(BASE_URL + "FuelLock/StartSession", "POST", payload, accessToken)
 
-    headers = {'User-Agent':'Apache-HttpClient/UNAVAILABLE (java 1.4)',
-               'Connection':'Keep-Alive',
-               'Host':'711-goodcall.api.tigerspike.com',
-               'Authorization':'%s' % tssa,
-               'X-OsVersion':ANDROID_VERSION,
-               'X-OsName':'Android',
-               'X-DeviceID':DEVICE_ID,
-               'X-AppVersion':APP_VERSION,
-               'X-DeviceSecret':deviceSecret,
-               'Content-Type':'application/json; charset=utf-8'}
+    headers = {
+        "User-Agent": "Apache-HttpClient/UNAVAILABLE (java 1.4)",
+        "Connection": "Keep-Alive",
+        "Host": "711-goodcall.api.tigerspike.com",
+        "Authorization": "%s" % tssa,
+        "X-OsVersion": ANDROID_VERSION,
+        "X-OsName": "Android",
+        "X-DeviceID": DEVICE_ID,
+        "X-AppVersion": APP_VERSION,
+        "X-DeviceSecret": deviceSecret,
+        "Content-Type": "application/json; charset=utf-8",
+    }
 
     response = requests.post(BASE_URL + "FuelLock/StartSession", data=payload, headers=headers)
 
-    return(response.content)
+    return response.content
 
 
 def confirmLockin(deviceSecret, accessToken, accountID, fuel_type, litres):
 
-    '''
+    """
     FUEL TYPE OPTIONS
     52 = Unleaded 91
     53 = Diesel
@@ -67,25 +75,35 @@ def confirmLockin(deviceSecret, accessToken, accountID, fuel_type, litres):
     55 = Unleaded 95
     56 = Unleaded 98
     57 = E10
-    '''
+    """
 
-    payload = '{"AccountId":"' + accountID + '","FuelType":' + fuel_type + ',"NumberOfLitres":' + litres + '}'
+    payload = (
+        '{"AccountId":"'
+        + accountID
+        + '","FuelType":'
+        + fuel_type
+        + ',"NumberOfLitres":'
+        + litres
+        + "}"
+    )
     tssa = generateTssa(BASE_URL + "FuelLock/Confirm", "POST", payload, accessToken)
 
-    headers = {'User-Agent':'Apache-HttpClient/UNAVAILABLE (java 1.4)',
-               'Connection':'Keep-Alive',
-               'Host':'711-goodcall.api.tigerspike.com',
-               'Authorization':'%s' % tssa,
-               'X-OsVersion':ANDROID_VERSION,
-               'X-OsName':'Android',
-               'X-DeviceID':DEVICE_ID,
-               'X-AppVersion':APP_VERSION,
-               'X-DeviceSecret':deviceSecret,
-               'Content-Type':'application/json; charset=utf-8'}
+    headers = {
+        "User-Agent": "Apache-HttpClient/UNAVAILABLE (java 1.4)",
+        "Connection": "Keep-Alive",
+        "Host": "711-goodcall.api.tigerspike.com",
+        "Authorization": "%s" % tssa,
+        "X-OsVersion": ANDROID_VERSION,
+        "X-OsName": "Android",
+        "X-DeviceID": DEVICE_ID,
+        "X-AppVersion": APP_VERSION,
+        "X-DeviceSecret": deviceSecret,
+        "Content-Type": "application/json; charset=utf-8",
+    }
 
     response = requests.post(BASE_URL + "FuelLock/Confirm", data=payload, headers=headers)
 
-    return(response.content)
+    return response.content
 
 
 # Below doesn't work, but it is in the app source code. Maybe it used to work at some stage?
@@ -93,92 +111,105 @@ def redeemLockin(deviceSecret, accessToken, id):
 
     tssa = generateTssa(BASE_URL + "FuelLock/Redeem?fuelLockId=" + id, "GET", "")
 
-    headers = {'User-Agent':'Apache-HttpClient/UNAVAILABLE (java 1.4)',
-               'Connection':'Keep-Alive',
-               'Host':'711-goodcall.api.tigerspike.com',
-               'Authorization':'%s' % tssa,
-               'X-OsVersion':ANDROID_VERSION,
-               'X-OsName':'Android',
-               'X-DeviceID':DEVICE_ID,
-               'X-AppVersion':APP_VERSION,
-               'X-DeviceSecret':deviceSecret}
+    headers = {
+        "User-Agent": "Apache-HttpClient/UNAVAILABLE (java 1.4)",
+        "Connection": "Keep-Alive",
+        "Host": "711-goodcall.api.tigerspike.com",
+        "Authorization": "%s" % tssa,
+        "X-OsVersion": ANDROID_VERSION,
+        "X-OsName": "Android",
+        "X-DeviceID": DEVICE_ID,
+        "X-AppVersion": APP_VERSION,
+        "X-DeviceSecret": deviceSecret,
+    }
 
     response = requests.get(BASE_URL + "FuelLock/Redeem?fuelLockId=" + id, headers=headers)
 
-    return(response.content)
+    return response.content
+
 
 def isFplRedeemed(deviceSecret, accessToken, id):
 
     tssa = generateTssa(BASE_URL + "FuelLock/IsRedeemed?fuelLockId=" + id, "GET", "", accessToken)
-    headers = {'User-Agent':'Apache-HttpClient/UNAVAILABLE (java 1.4)',
-               'Connection':'Keep-Alive',
-               'Host':'711-goodcall.api.tigerspike.com',
-               'Authorization':'%s' % tssa,
-               'X-OsVersion':ANDROID_VERSION,
-               'X-OsName':'Android',
-               'X-DeviceID':DEVICE_ID,
-               'X-AppVersion':APP_VERSION,
-               'X-DeviceSecret':deviceSecret}
+    headers = {
+        "User-Agent": "Apache-HttpClient/UNAVAILABLE (java 1.4)",
+        "Connection": "Keep-Alive",
+        "Host": "711-goodcall.api.tigerspike.com",
+        "Authorization": "%s" % tssa,
+        "X-OsVersion": ANDROID_VERSION,
+        "X-OsName": "Android",
+        "X-DeviceID": DEVICE_ID,
+        "X-AppVersion": APP_VERSION,
+        "X-DeviceSecret": deviceSecret,
+    }
 
     response = requests.get(BASE_URL + "FuelLock/IsRedeemed?fuelLockId=" + id, headers=headers)
 
     # If response is empty, then fuel lock has been redeemed
-    return(response.content)
+    return response.content
 
 
 def refreshFplData(deviceSecret, accessToken, id):
 
     tssa = generateTssa(BASE_URL + "FuelLock/Refresh?fuelLockId=" + id, "GET", "", accessToken)
 
-    headers = {'User-Agent':'Apache-HttpClient/UNAVAILABLE (java 1.4)',
-               'Connection':'Keep-Alive',
-               'Host':'711-goodcall.api.tigerspike.com',
-               'Authorization':'%s' % tssa,
-               'X-OsVersion':ANDROID_VERSION,
-               'X-OsName':'Android',
-               'X-DeviceID':DEVICE_ID,
-               'X-AppVersion':APP_VERSION,
-               'X-DeviceSecret':deviceSecret}
+    headers = {
+        "User-Agent": "Apache-HttpClient/UNAVAILABLE (java 1.4)",
+        "Connection": "Keep-Alive",
+        "Host": "711-goodcall.api.tigerspike.com",
+        "Authorization": "%s" % tssa,
+        "X-OsVersion": ANDROID_VERSION,
+        "X-OsName": "Android",
+        "X-DeviceID": DEVICE_ID,
+        "X-AppVersion": APP_VERSION,
+        "X-DeviceSecret": deviceSecret,
+    }
 
     response = requests.get(BASE_URL + "FuelLock/Refresh?fuelLockId=" + id, headers=headers)
 
     # If response is empty, then fuel lock has been redeemed
-    return(response.content)
+    return response.content
 
 
 def checkFuelPrice(store):
 
     tssa = generateTssa(BASE_URL + "FuelPrice/FuelPriceForStore/" + store, "GET", "")
 
-    headers = {'User-Agent':'Apache-HttpClient/UNAVAILABLE (java 1.4)',
-               'Connection':'Keep-Alive',
-               'Host':'711-goodcall.api.tigerspike.com',
-               'Authorization':'%s' % tssa,
-               'X-OsVersion':ANDROID_VERSION,
-               'X-OsName':'Android',
-               'X-DeviceID':DEVICE_ID,
-               'X-AppVersion':APP_VERSION}
+    headers = {
+        "User-Agent": "Apache-HttpClient/UNAVAILABLE (java 1.4)",
+        "Connection": "Keep-Alive",
+        "Host": "711-goodcall.api.tigerspike.com",
+        "Authorization": "%s" % tssa,
+        "X-OsVersion": ANDROID_VERSION,
+        "X-OsName": "Android",
+        "X-DeviceID": DEVICE_ID,
+        "X-AppVersion": APP_VERSION,
+    }
 
     response = requests.get(BASE_URL + "FuelPrice/FuelPriceForStore/" + store, headers=headers)
 
-    return(response.content)
+    return response.content
+
 
 def getStores():
 
     tssa = generateTssa(BASE_URL + "store/StoresAfterDateTime/1001", "GET", "")
 
-    headers = {'User-Agent':'Apache-HttpClient/UNAVAILABLE (java 1.4)',
-               'Connection':'Keep-Alive',
-               'Host':'711-goodcall.api.tigerspike.com',
-               'Authorization':'%s' % tssa,
-               'X-OsVersion':ANDROID_VERSION,
-               'X-OsName':'Android',
-               'X-DeviceID':DEVICE_ID,
-               'X-AppVersion':APP_VERSION}
+    headers = {
+        "User-Agent": "Apache-HttpClient/UNAVAILABLE (java 1.4)",
+        "Connection": "Keep-Alive",
+        "Host": "711-goodcall.api.tigerspike.com",
+        "Authorization": "%s" % tssa,
+        "X-OsVersion": ANDROID_VERSION,
+        "X-OsName": "Android",
+        "X-DeviceID": DEVICE_ID,
+        "X-AppVersion": APP_VERSION,
+    }
 
     response = requests.get(BASE_URL + "store/StoresAfterDateTime/1001", headers=headers)
 
-    return(response.content)
+    return response.content
 
-if __name__ == '__main__' :
+
+if __name__ == "__main__":
     print("You should call the functions in this module from your main script")

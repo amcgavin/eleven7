@@ -1,7 +1,8 @@
 *.pyc
 *.pyo
-*.json
 /__pycache__/*
-settings.py
-settings.py
-autolock.ini
+.cache/
+.idea/
+.mypy_cache/
+node_modules/
+dist/

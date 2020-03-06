@@ -1,4 +1,4 @@
-'''
+"""
     7-Eleven Python implementation.
 
     Copyright (C) 2019  Freyta
@@ -12,24 +12,46 @@
     GNU General Public License for more details.
     You should have received a copy of the GNU General Public License
     along with this program. If not, see <https://www.gnu.org/licenses/>.
-'''
+"""
+import json
 
-from . import *
+import requests
+from API_REQUESTS.api import (
+    ANDROID_VERSION,
+    APP_VERSION,
+    BASE_URL,
+    DEVICE_ID,
+    DEVICE_NAME,
+    generateTssa,
+)
+
 
 def login(email, password):
 
-    payload = '{"Email":"' + email + '","Password":"' + password + '","DeviceName":"' + DEVICE_NAME + '","DeviceOsNameVersion":"' + ANDROID_VERSION + '"}'
+    payload = (
+        '{"Email":"'
+        + email
+        + '","Password":"'
+        + password
+        + '","DeviceName":"'
+        + DEVICE_NAME
+        + '","DeviceOsNameVersion":"'
+        + ANDROID_VERSION
+        + '"}'
+    )
     tssa = generateTssa(BASE_URL + "account/login", "POST", payload)
 
-    headers = {'User-Agent':'Apache-HttpClient/UNAVAILABLE (java 1.4)',
-               'Connection':'Keep-Alive',
-               'Host':'711-goodcall.api.tigerspike.com',
-               'Authorization':'%s' % tssa,
-               'X-OsVersion':ANDROID_VERSION,
-               'X-OsName':'Android',
-               'X-DeviceID':DEVICE_ID,
-               'X-AppVersion':APP_VERSION,
-               'Content-Type':'application/json; charset=utf-8'}
+    headers = {
+        "User-Agent": "Apache-HttpClient/UNAVAILABLE (java 1.4)",
+        "Connection": "Keep-Alive",
+        "Host": "711-goodcall.api.tigerspike.com",
+        "Authorization": "%s" % tssa,
+        "X-OsVersion": ANDROID_VERSION,
+        "X-OsName": "Android",
+        "X-DeviceID": DEVICE_ID,
+        "X-AppVersion": APP_VERSION,
+        "Content-Type": "application/json; charset=utf-8",
+    }
 
     response = requests.post(BASE_URL + "account/login", data=payload, headers=headers)
 
@@ -40,11 +62,10 @@ def login(email, password):
     accessToken = accessToken[1].split("'")
     accessToken = accessToken[0]
 
-
     returnContent = json.loads(returnContent)
-    deviceSecret = returnContent['DeviceSecretToken']
-    accountID = returnContent['AccountId']
-    accountBalance = returnContent['DigitalCard']['Balance']
+    deviceSecret = returnContent["DeviceSecretToken"]
+    accountID = returnContent["AccountId"]
+    accountBalance = returnContent["DigitalCard"]["Balance"]
     # These 3 variables are used for the basis of multiple requests, so it is a good idea to store them in
     # a variable when you call them (i.e. myaccount = account.login("email", "password"))
     #
@@ -59,98 +80,143 @@ def logout(deviceSecret, accessToken):
     payload = '""'
     tssa = generateTssa(BASE_URL + "account/logout", "POST", payload, accessToken)
 
-    headers = {'User-Agent':'Apache-HttpClient/UNAVAILABLE (java 1.4)',
-               'Connection':'Keep-Alive',
-               'Host':'711-goodcall.api.tigerspike.com',
-               'Authorization':'%s' % tssa,
-               'X-OsVersion':ANDROID_VERSION,
-               'X-OsName':'Android',
-               'X-DeviceID':DEVICE_ID,
-               'X-AppVersion':APP_VERSION,
-               'X-DeviceSecret':deviceSecret,
-               'Content-Type':'application/json; charset=utf-8'}
+    headers = {
+        "User-Agent": "Apache-HttpClient/UNAVAILABLE (java 1.4)",
+        "Connection": "Keep-Alive",
+        "Host": "711-goodcall.api.tigerspike.com",
+        "Authorization": "%s" % tssa,
+        "X-OsVersion": ANDROID_VERSION,
+        "X-OsName": "Android",
+        "X-DeviceID": DEVICE_ID,
+        "X-AppVersion": APP_VERSION,
+        "X-DeviceSecret": deviceSecret,
+        "Content-Type": "application/json; charset=utf-8",
+    }
 
     response = requests.post(BASE_URL + "account/logout", data=payload, headers=headers)
 
-    return(response.content)
+    return response.content
 
 
 def getAccountDetails(deviceSecret, accessToken):
 
     tssa = generateTssa(BASE_URL + "account/getaccountinfo", "GET", "", accessToken)
 
-    headers = {'User-Agent':'Apache-HttpClient/UNAVAILABLE (java 1.4)',
-               'Connection':'Keep-Alive',
-               'Host':'711-goodcall.api.tigerspike.com',
-               'Authorization':'%s' % tssa,
-               'X-OsVersion':ANDROID_VERSION,
-               'X-OsName':'Android',
-               'X-DeviceID':DEVICE_ID,
-               'X-AppVersion':APP_VERSION,
-               'X-DeviceSecret':deviceSecret}
+    headers = {
+        "User-Agent": "Apache-HttpClient/UNAVAILABLE (java 1.4)",
+        "Connection": "Keep-Alive",
+        "Host": "711-goodcall.api.tigerspike.com",
+        "Authorization": "%s" % tssa,
+        "X-OsVersion": ANDROID_VERSION,
+        "X-OsName": "Android",
+        "X-DeviceID": DEVICE_ID,
+        "X-AppVersion": APP_VERSION,
+        "X-DeviceSecret": deviceSecret,
+    }
 
     response = requests.get(BASE_URL + "account/GetAccountInfo", headers=headers)
 
-    return(response.content)
+    return response.content
+
 
 def newPasswordRequest(deviceSecret, accessToken, password):
 
-    payload = '{"Password":"' + password + '","Token":"' + accessToken + '","DeviceName"' + DEVICE_NAME + '","DeviceOsNameVersion":"' + ANDROID_VERSION + '"}'
+    payload = (
+        '{"Password":"'
+        + password
+        + '","Token":"'
+        + accessToken
+        + '","DeviceName"'
+        + DEVICE_NAME
+        + '","DeviceOsNameVersion":"'
+        + ANDROID_VERSION
+        + '"}'
+    )
     tssa = generateTssa(BASE_URL + "Account/NewPassword", "POST", payload)
 
-    headers = {'User-Agent':'Apache-HttpClient/UNAVAILABLE (java 1.4)',
-               'Connection':'Keep-Alive',
-               'Host':'711-goodcall.api.tigerspike.com',
-               'Authorization':'%s' % tssa,
-               'X-OsVersion':ANDROID_VERSION,
-               'X-OsName':'Android',
-               'X-DeviceID':DEVICE_ID,
-               'X-AppVersion':APP_VERSION,
-               'X-DeviceSecret':deviceSecret,
-               'Content-Type':'application/json; charset=utf-8'}
+    headers = {
+        "User-Agent": "Apache-HttpClient/UNAVAILABLE (java 1.4)",
+        "Connection": "Keep-Alive",
+        "Host": "711-goodcall.api.tigerspike.com",
+        "Authorization": "%s" % tssa,
+        "X-OsVersion": ANDROID_VERSION,
+        "X-OsName": "Android",
+        "X-DeviceID": DEVICE_ID,
+        "X-AppVersion": APP_VERSION,
+        "X-DeviceSecret": deviceSecret,
+        "Content-Type": "application/json; charset=utf-8",
+    }
 
     response = requests.post(BASE_URL + "Account/NewPassword", data=payload, headers=headers)
 
-    return(response.content)
+    return response.content
+
 
 def newAccountRegistration(dobTimestamp, email, firstName, password, phoneNumber, surname):
 
-    payload = '{"DobSinceEpoch":"' + str(dobTimestamp) + '","EmailAddress":"' + email + '","FirstName":"' + firstName + '","OptInForPromotions":false,"OptInForSms":false,"Password":"' + password + '","PhoneNumber":"' + phoneNumber + '","Surname":"' + surname + '"}'
+    payload = (
+        '{"DobSinceEpoch":"'
+        + str(dobTimestamp)
+        + '","EmailAddress":"'
+        + email
+        + '","FirstName":"'
+        + firstName
+        + '","OptInForPromotions":false,"OptInForSms":false,"Password":"'
+        + password
+        + '","PhoneNumber":"'
+        + phoneNumber
+        + '","Surname":"'
+        + surname
+        + '"}'
+    )
     tssa = generateTssa(BASE_URL + "account/register", "POST", payload)
 
-    headers = {'User-Agent':'Apache-HttpClient/UNAVAILABLE (java 1.4)',
-               'Connection':'Keep-Alive',
-               'Host':'711-goodcall.api.tigerspike.com',
-               'Authorization':'%s' % tssa,
-               'X-OsVersion':ANDROID_VERSION,
-               'X-OsName':'Android',
-               'X-DeviceID':DEVICE_ID,
-               'X-AppVersion':APP_VERSION,
-               'Content-Type':'application/json; charset=utf-8'}
+    headers = {
+        "User-Agent": "Apache-HttpClient/UNAVAILABLE (java 1.4)",
+        "Connection": "Keep-Alive",
+        "Host": "711-goodcall.api.tigerspike.com",
+        "Authorization": "%s" % tssa,
+        "X-OsVersion": ANDROID_VERSION,
+        "X-OsName": "Android",
+        "X-DeviceID": DEVICE_ID,
+        "X-AppVersion": APP_VERSION,
+        "Content-Type": "application/json; charset=utf-8",
+    }
 
     response = requests.post(BASE_URL + "account/register", data=payload, headers=headers)
 
-    return(response.content)
+    return response.content
+
 
 def verifyAccount(VerificationCode):
 
-    payload = '{"VerificationCode":"' + VerificationCode + '","DeviceName"' + DEVICE_NAME + '","DeviceOsNameVersion":"' + ANDROID_VERSION + '"}'
+    payload = (
+        '{"VerificationCode":"'
+        + VerificationCode
+        + '","DeviceName"'
+        + DEVICE_NAME
+        + '","DeviceOsNameVersion":"'
+        + ANDROID_VERSION
+        + '"}'
+    )
     tssa = generateTssa(BASE_URL + "account/register", "POST", payload)
 
-    headers = {'User-Agent':'Apache-HttpClient/UNAVAILABLE (java 1.4)',
-               'Connection':'Keep-Alive',
-               'Host':'711-goodcall.api.tigerspike.com',
-               'Authorization':'%s' % tssa,
-               'X-OsVersion':ANDROID_VERSION,
-               'X-OsName':'Android',
-               'X-DeviceID':DEVICE_ID,
-               'X-AppVersion':APP_VERSION,
-               'Content-Type':'application/json; charset=utf-8'}
+    headers = {
+        "User-Agent": "Apache-HttpClient/UNAVAILABLE (java 1.4)",
+        "Connection": "Keep-Alive",
+        "Host": "711-goodcall.api.tigerspike.com",
+        "Authorization": "%s" % tssa,
+        "X-OsVersion": ANDROID_VERSION,
+        "X-OsName": "Android",
+        "X-DeviceID": DEVICE_ID,
+        "X-AppVersion": APP_VERSION,
+        "Content-Type": "application/json; charset=utf-8",
+    }
 
     response = requests.post(BASE_URL + "account/register", data=payload, headers=headers)
 
-    return(response.content)
+    return response.content
 
 
-if __name__ == '__main__' :
+if __name__ == "__main__":
     print("You should call the functions in this module from your main script")
