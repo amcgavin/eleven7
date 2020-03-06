@@ -1,0 +1,10 @@
+version: '3'
+# docker compose should only be used for dev as it overrides the command
+# use pure docker for production
+services:
+  web:
+    build: .
+    volumes:
+      - .:/app/code
+    command: python /app/code/app.py
+    ports: ["8000:8000"]
