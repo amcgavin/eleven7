@@ -1,7 +1,7 @@
 steps:
-  -id: build
-  - name: 'gcr.io/kaniko-project/executor:latest'
-    args: ["--destination=gcr.io/$PROJECT_ID/eleven7", "--cache=true"]
+    - id: build
+      name: 'gcr.io/kaniko-project/executor:latest'
+      args: ["--destination=gcr.io/$PROJECT_ID/eleven7", "--cache=true"]
 
     - id: 'push'
       name: 'gcr.io/cloud-builders/docker'
