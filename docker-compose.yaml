@@ -3,6 +3,8 @@ version: '3'
 # use pure docker for production
 services:
   web:
+    env_file:
+      - .env
     build: .
     volumes:
       - .:/app/code

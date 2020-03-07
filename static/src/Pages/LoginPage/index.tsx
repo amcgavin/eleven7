@@ -3,7 +3,7 @@ import axios from 'axios'
 import { Button, Form, Grid, Header } from 'semantic-ui-react'
 
 const makeFormHandler = url => {
-  const [state, dispatch] = React.useReducer(
+  const [formState, dispatch] = React.useReducer(
     (state, action) => {
       switch (action.type) {
         case 'set':
@@ -17,22 +17,23 @@ const makeFormHandler = url => {
         case 'set-error':
           return { ...state, errors: { ...action.errors } }
         default:
-          break
+          return state
       }
     },
-    { values: {}, errors: {}, submittedValues: {} }
+    { values: {}, errors: {}, submittedValues: {} },
   )
   const changeHandler = React.useCallback(e => {
     dispatch({ type: 'set', key: e.target.name, value: e.target.value })
   }, [])
 
   React.useEffect(() => {
-    if (!Object.keys(state.submittedValues).length) return
+    if (!Object.keys(formState.submittedValues).length) return
     axios
-      .post(url, state.submittedValues)
-      .then(() => {})
+      .post(url, formState.submittedValues)
+      .then(() => {
+        // todo: something with the response
+      })
       .catch(error => {
-        console.log(error.response.status)
         if (error.response.status === 400) {
           dispatch({ type: 'set-error', errors: error.response.data.errors })
         }
@@ -40,7 +41,7 @@ const makeFormHandler = url => {
       .then(() => {
         dispatch({ type: 'finish-submit' })
       })
-  }, [state.submittedValues, url])
+  }, [formState.submittedValues, url])
 
   const onSubmit = React.useCallback(e => {
     e.preventDefault()
@@ -49,9 +50,9 @@ const makeFormHandler = url => {
   return [
     changeHandler,
     onSubmit,
-    state.values,
-    state.errors,
-    !!Object.keys(state.submittedValues).length,
+    formState.values,
+    formState.errors,
+    !!Object.keys(formState.submittedValues).length,
   ]
 }
 
@@ -60,7 +61,7 @@ const LoginPage = () => {
   return (
     <Grid textAlign="center" style={{ height: '100vh' }} verticalAlign="middle">
       <Grid.Column style={{ maxWidth: 450 }}>
-        <Header as="h2" color="teal" textAlign="center"></Header>
+        <Header as="h2" color="teal" textAlign="center" />
         <Form error={!!Object.keys(errors).length} onSubmit={onSubmit} size="large">
           <Form.Input
             name="email"

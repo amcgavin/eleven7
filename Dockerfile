@@ -45,10 +45,6 @@ RUN yarn run docker
 FROM python:3.8-slim
 WORKDIR /app
 
-# Because we're using the slim image, need to explicityly install libpq-dev
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends libpq-dev
-
 COPY . ./code
 
 COPY --from=pydeps /app/.venv /app/.venv/
