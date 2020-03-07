@@ -6,3 +6,5 @@
 .mypy_cache/
 node_modules/
 dist/
+.env
+gcp_creds.json

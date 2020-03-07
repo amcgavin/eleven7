@@ -1,8 +1,18 @@
 import importlib
 import os
+from logging import getLogger
 
 from flask import Flask
-from utils.web import csrf, static_digest
+from utils.web import csrf, session_interface, static_digest
+
+log = getLogger(__name__)
+
+
+def load_from_env():
+    from utils.sm_helper import access_secrets
+
+    secrets = access_secrets(["SECRET_KEY"])
+    os.environ.update(secrets)
 
 
 def auto_configure_routes(app):
@@ -17,14 +27,17 @@ def auto_configure_routes(app):
 
 
 def create_app():
+    load_from_env()
     app = Flask(
         __name__,
         static_folder="static/dist",
         static_url_path="/static",
         template_folder="templates",
     )
-    # todo: secret key from something else
-    app.secret_key = b"@\x84\xae\x87\x0e\xd7\xdc\x0e4&\xee\xde\x18\xa9^\xe2"
+    app.secret_key = os.environ.get("SECRET_KEY", "DEFAULT").encode("utf-8")
+    if app.secret_key == b"DEFAULT":
+        log.warning("secret key not set!")
+    app.session_interface = session_interface
     static_digest.init_app(app)
     csrf.init_app(app)
     auto_configure_routes(app)
