@@ -31,12 +31,12 @@ FROM node:10 as jsdeps
 WORKDIR /app
 
 # don't care about devDeps, EVER
-COPY package.json yarn.lock ./
+COPY package.json yarn.lock tsconfig.json ./
 RUN yarn install --production
 
-COPY static/src ./
+COPY static/src ./static/src
 
-RUN yarn run docker
+RUN yarn run build
 
 # --- Layer 3: put everything together
 #
@@ -48,7 +48,7 @@ WORKDIR /app
 COPY . ./code
 
 COPY --from=pydeps /app/.venv /app/.venv/
-COPY --from=jsdeps /app/dist /app/code/static/dist/
+COPY --from=jsdeps /app/static/dist /app/code/static/dist/
 
 # Explicitly put our code on PYTHONPATH to avoid having to install poetry and
 # activiate it on this layer.

@@ -31,6 +31,7 @@
         ],
         "import/resolver": {
             "node": {
+                "paths": ["./static"],
                 "extensions": [
                     ".tsx",
                     ".jsx",
@@ -120,6 +121,10 @@
                 "ignoreRefs": true
             }
         ],
+        "@typescript-eslint/ban-ts-ignore":  0,
+        "@typescript-eslint/no-explicit-any": 0,
+        "react/jsx-props-no-spreading": 0,
+        "react/jsx-fragments": 0,
         "import/no-extraneous-dependencies": [
             2,
             {

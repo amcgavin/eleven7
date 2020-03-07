@@ -5,6 +5,7 @@ from . import blueprint
 
 
 @blueprint.route("/", methods=["GET"])
+@blueprint.route("/login/", methods=["GET"])
 @csrf.exempt
 def react_handler(*args, **kwargs):
     return render_template("index.html")
