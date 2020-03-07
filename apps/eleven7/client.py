@@ -2,50 +2,17 @@ import base64
 import hashlib
 import hmac
 import json
-import random
 import time
 import typing as t
 import uuid
-from dataclasses import dataclass, field
 from urllib.parse import urljoin
 
 import requests
 from Cryptodome.Cipher import DES
 from Cryptodome.Util.Padding import pad
+from utils.database import db_cached_result
 
-
-def generate_device_id() -> str:
-    return "".join(random.choice("0123456789abcdef") for i in range(15))
-
-
-@dataclass(frozen=True)
-class BaseUser:
-    device_id: str = field(default_factory=generate_device_id)
-
-
-@dataclass(frozen=True)
-class _User:
-    account_id: str
-    access_token: str
-    device_secret: str
-    balance: str
-
-
-@dataclass(frozen=True)
-class User(BaseUser, _User):
-    pass
-
-
-class AnonymousUser(BaseUser):
-    def login(self, account_id, access_token, device_secret, balance) -> User:
-        return User(
-            device_id=self.device_id,
-            account_id=account_id,
-            access_token=access_token,
-            device_secret=device_secret,
-            balance=balance,
-        )
-
+from .models import AnonymousUser, BaseUser, FuelOffer, Location, User, fuel_types
 
 AccountContactDetails = t.TypedDict("AccountContactDetails", {"Mobile": str})
 AccountPersonalDetailsName = t.TypedDict(
@@ -168,13 +135,49 @@ class Eleven7Client(object):
         )
         response.raise_for_status()
         data = response.json()
-        print(data)
         return user.login(
+            firstname=data["FirstName"],
             account_id=data["AccountId"],
             access_token=response.headers["X-AccessToken"],
             device_secret=data["DeviceSecretToken"],
             balance=data["DigitalCard"]["Balance"],
         )
+
+    def lockin(self, user: User, fuel_type: str, expected_price: float, location: Location) -> bool:
+        session_response = self.make_request(
+            urljoin(self.BASE_URL, "FuelLock/StartSession"),
+            "POST",
+            user,
+            payload={
+                "LastStoreUpdateTimestamp": int(time.time()),
+                "Latitude": str(location.fuzzy_latitude),
+                "Longitude": str(location.fuzzy_longitude),
+            },
+        )
+
+        session_response.raise_for_status()
+        ean = fuel_types[fuel_type]
+        data = session_response.json()
+        for store in data["CheapestFuelTypeStores"]:
+            for offer in store["FuelPrices"]:
+                if offer["Ean"] == ean:
+                    if offer["Price"] != expected_price:
+                        raise ValueError("Prices have changed")
+                    break
+        litres = int(data["Balance"] * 100 // expected_price)
+
+        confirm_response = self.make_request(
+            urljoin(self.BASE_URL, "FuelLock/Confirm"),
+            "POST",
+            user,
+            payload={
+                "AccountId": user.account_id,
+                "FuelType": str(ean),
+                "NumberOfLitres": str(litres),
+            },
+        )
+        confirm_response.raise_for_status()
+        return True
 
     def logout(self, user: User):
         response = self.make_request(
@@ -186,3 +189,27 @@ class Eleven7Client(object):
         response = self.make_request(urljoin(self.BASE_URL, "account/GetAccountInfo"), "GET", user)
         response.raise_for_status()
         return response.json()
+
+
+class ProjectZeroThreeClient(object):
+    user_agent = "python/eleven7"
+
+    @db_cached_result
+    def prices(self) -> t.Dict[str, t.List[dict]]:
+        response = requests.get(
+            "https://projectzerothree.info/api.php?format=json",
+            headers={"User-Agent": self.user_agent},
+        )
+        response.raise_for_status()
+        data = response.json()
+        return {region["region"]: region["prices"] for region in data["regions"]}
+
+    def get_prices(self) -> t.Dict[str, t.List[FuelOffer]]:
+        return {
+            region: [FuelOffer(**offer) for offer in prices]
+            for region, prices in self.prices.items()
+        }
+
+    def get_best_prices(self) -> t.Sequence[FuelOffer]:
+        prices = self.get_prices()
+        return prices["All"]

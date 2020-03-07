@@ -65,7 +65,7 @@ class FirestoreSessionInterface(SessionInterface):
     def _decrypt(self, app, encrypted: str, verify_salt: str) -> dict:
         crypt = self._get_crypt(app)
         salted = unpad(crypt.decrypt(bytes.fromhex(encrypted)), AES.block_size).decode("utf-8")
-        serialised, salt = salted.split(":", 1)
+        salt, serialised = salted.split(":", 1)
         if not hmac.compare_digest(salt, verify_salt):
             raise ValueError()
         return self.serializer.loads(serialised)
