@@ -12,7 +12,7 @@ from Cryptodome.Cipher import DES
 from Cryptodome.Util.Padding import pad
 from utils.database import db_cached_result
 
-from .models import AnonymousUser, BaseUser, FuelOffer, Location, User, fuel_types
+from .models import AnonymousUser, BaseUser, FuelOffer, Location, LockedOffer, User, fuel_types
 
 AccountContactDetails = t.TypedDict("AccountContactDetails", {"Mobile": str})
 AccountPersonalDetailsName = t.TypedDict(
@@ -141,6 +141,22 @@ class Eleven7Client(object):
             access_token=response.headers["X-AccessToken"],
             device_secret=data["DeviceSecretToken"],
             balance=data["DigitalCard"]["Balance"],
+        )
+
+    def current_lock(self, user: User) -> t.Optional[LockedOffer]:
+        response = self.make_request(urljoin(self.BASE_URL, "FuelLock/List"), "GET", user)
+        response.raise_for_status()
+        data = response.json()
+        if not data:
+            return None
+        offer = data[0]
+        return LockedOffer(
+            status=offer["Status"],
+            ean=offer["FuelGradeModel"],
+            cents_per_litre=offer["CentsPerLitre"],
+            total_litres=offer["TotalLitres"],
+            expires_ts=offer["ExpiresAt"],
+            redeemed_ts=offer.get("RedeemedAt"),
         )
 
     def lockin(self, user: User, fuel_type: str, expected_price: float, location: Location) -> bool:

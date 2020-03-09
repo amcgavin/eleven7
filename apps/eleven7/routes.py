@@ -47,7 +47,12 @@ def account_details():
     user = session.get("user", None)
     if not user:
         raise UnauthenticatedError()
-    return dict(firstname=user["firstname"], balance=user["balance"])
+    user = User(**user)
+    client = Eleven7Client()
+    locked_offer = client.current_lock(user)
+    return dict(
+        firstname=user.firstname, balance=user.balance, locked_offer=locked_offer.serialise()
+    )
 
 
 @app.route("/prices/", methods=["GET"])
