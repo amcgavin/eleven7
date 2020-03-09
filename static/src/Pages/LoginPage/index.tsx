@@ -9,7 +9,9 @@ const LoginPage = () => {
   )
   return (
     <React.Fragment>
-      <Header as="h2" color="teal" textAlign="center" />
+      <Header as="h2" color="teal" textAlign="center">
+        Log into your 7Eleven Account
+      </Header>
       <Form error onSubmit={onSubmit} loading={submitting} size="large">
         <Form.Input
           name="email"

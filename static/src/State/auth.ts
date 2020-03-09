@@ -29,7 +29,11 @@ export const useIsAuth = () => {
   return [loading, loggedIn]
 }
 
-const parseResponse = ({ email, balance }) => ({ email, balance, loggedIn: true })
+const parseResponse = ({ firstname, balance }: { firstname: string; balance: number }) => ({
+  firstname,
+  balance,
+  loggedIn: true,
+})
 
 export const reducer = (state: AuthState = initialState, action) => {
   switch (action.type) {

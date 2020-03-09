@@ -3,8 +3,15 @@ import axios from 'axios'
 import { makeFormHandler } from 'src/State/forms'
 import { Button, Form, Header } from 'semantic-ui-react'
 
+interface Offer {
+  type: string
+  price: number
+  lat: number
+  lng: number
+}
+
 export default () => {
-  const [offers, setOffers] = React.useState([])
+  const [offers, setOffers] = React.useState<Offer[]>([])
   React.useEffect(() => {
     axios.get('/api/prices/').then(response => {
       setOffers(response.data.prices)
@@ -25,7 +32,9 @@ export default () => {
   )
   const selectHandler = React.useCallback(
     (e, props) => {
-      const selected = props.options.find(offer => offer.value === props.value)
+      const selected = props.options.find(
+        (option: { offer: Offer; value: string }) => option.value === props.value,
+      )
       if (selected) {
         changeHandler(e, props)
         changeHandler(e, { name: 'expected_price', value: selected.offer.price })
@@ -37,7 +46,9 @@ export default () => {
   )
   return (
     <React.Fragment>
-      <Header as="h2" color="teal" textAlign="center" />
+      <Header as="h2" color="teal" textAlign="center">
+        Lock in
+      </Header>
       <Form error loading={submitting} onSubmit={onSubmit} size="large">
         <Form.Select
           options={formattedOffers}
