@@ -62,7 +62,7 @@ class Eleven7Client(object):
     BASE_URL = "https://711-goodcall.api.tigerspike.com/api/v1/"
     DEVICE_NAME = "SM-G973FZKAXSA"
     OS_VERSION = "Android 9.0.0"
-    APP_VERSION = "1.8.0.2027"
+    APP_VERSION = "1.10.0.2044"
 
     @classmethod
     def des_encrypt_string(cls, device_id):
@@ -164,7 +164,7 @@ class Eleven7Client(object):
                     if offer["Price"] != expected_price:
                         raise ValueError("Prices have changed")
                     break
-        litres = int(data["Balance"] * 100 // expected_price)
+        litres = 150
 
         confirm_response = self.make_request(
             urljoin(self.BASE_URL, "FuelLock/Confirm"),
