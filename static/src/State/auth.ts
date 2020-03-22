@@ -1,22 +1,9 @@
 import * as React from 'react'
-import { useSelector } from 'react-redux'
-import { useRequest } from './requests'
-import { FormActionType } from './forms'
+import makeResource from './requests'
 
-interface AuthState {
-  email: string
-  balance: number
-  loggedIn: boolean
-}
+const current = { resource: null }
 
-const initialState = {
-  email: '',
-  balance: 0,
-  loggedIn: false,
-}
-
-const REQUEST_UPDATE = 'auth-request-update'
-
+export default () => {}
 export const useIsAuth = () => {
   const [loading, submit] = useRequest(REQUEST_UPDATE, undefined, 'auth')
   const loggedIn = useSelector(state => state.auth.loggedIn)
@@ -27,27 +14,4 @@ export const useIsAuth = () => {
     })
   }, [])
   return [loading, loggedIn]
-}
-
-const parseResponse = ({ firstname, balance }: { firstname: string; balance: number }) => ({
-  firstname,
-  balance,
-  loggedIn: true,
-})
-
-export const reducer = (state: AuthState = initialState, action) => {
-  switch (action.type) {
-    case FormActionType.REQUEST_UPDATE:
-      if (action.actionProps === 'login-form' && action.status === 'success') {
-        return parseResponse(action.response.data)
-      }
-      return state
-    case REQUEST_UPDATE:
-      if (action.status === 'success') {
-        return parseResponse(action.response.data)
-      }
-      return state
-    default:
-      return state
-  }
 }

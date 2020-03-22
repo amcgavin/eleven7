@@ -1,20 +1,34 @@
 import * as React from 'react'
-import { BrowserRouter, Switch } from 'react-router-dom'
 import { Grid } from 'semantic-ui-react'
 import LoginPage from './Pages/LoginPage'
 import HomePage from './Pages/HomePage'
-import { AuthenticatedRoute, UnauthenticatedRoute } from './Routing'
+
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = { hasError: false }
+  }
+
+  static getDerivedStateFromError() {
+    // Update state so the next render will show the fallback UI.
+    return { hasError: true }
+  }
+
+  render() {
+    if (this.state.hasError) {
+      // You can render any custom fallback UI
+      return <h1>Something went wrong.</h1>
+    }
+
+    return this.props.children
+  }
+}
 
 export default () => {
   return (
     <Grid textAlign="center" style={{ height: '100vh' }} verticalAlign="middle">
       <Grid.Column style={{ maxWidth: 450 }}>
-        <BrowserRouter>
-          <Switch>
-            <UnauthenticatedRoute path="/login/" exact component={LoginPage} />
-            <AuthenticatedRoute path="/" exact component={HomePage} />
-          </Switch>
-        </BrowserRouter>
+        <ErrorBoundary />
       </Grid.Column>
     </Grid>
   )
