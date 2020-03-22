@@ -2,12 +2,27 @@ import * as React from 'react'
 import axios from 'axios'
 import { makeFormHandler } from 'src/State/forms'
 import { Button, Form, Header } from 'semantic-ui-react'
+import useLocalSelector from 'src/State/useLocalSelector'
 
 interface Offer {
   type: string
   price: number
   lat: number
   lng: number
+}
+
+const LockedOffer = () => {
+  const offer = useLocalSelector('auth', state => state.lockedOffer)
+  if (!offer) return null
+  return (
+    <p>
+      current lock-in is {offer.status.toLocaleLowerCase()}.
+      <ul style={{ textAlign: 'left' }}>
+        <li>Cents per litre: {offer.cents_per_litre}</li>
+        <li>Expires at {`${offer.expires_at}`}</li>
+      </ul>
+    </p>
+  )
 }
 
 export default () => {
@@ -49,6 +64,7 @@ export default () => {
       <Header as="h2" color="teal" textAlign="center">
         Lock in
       </Header>
+      <LockedOffer />
       <Form error loading={submitting} onSubmit={onSubmit} size="large">
         <Form.Select
           options={formattedOffers}

@@ -50,9 +50,7 @@ def account_details():
     user = User(**user)
     client = Eleven7Client()
     locked_offer = client.current_lock(user)
-    return dict(
-        firstname=user.firstname, balance=user.balance, locked_offer=locked_offer.serialise()
-    )
+    return dict(firstname=user.firstname, locked_offer=locked_offer.serialise())
 
 
 @app.route("/prices/", methods=["GET"])

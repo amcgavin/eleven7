@@ -3,15 +3,23 @@ import { useSelector } from 'react-redux'
 import { useRequest } from './requests'
 import { FormActionType } from './forms'
 
+interface LockedOffer {
+  status: string
+  cents_per_litre: number
+  total_litres: number
+  fuel_type: string
+  expires_at: Date
+  redeemed_at: Date
+}
+
 interface AuthState {
   email: string
-  balance: number
   loggedIn: boolean
+  lockedOffer?: LockedOffer
 }
 
 const initialState = {
   email: '',
-  balance: 0,
   loggedIn: false,
 }
 
@@ -29,9 +37,19 @@ export const useIsAuth = () => {
   return [loading, loggedIn]
 }
 
-const parseResponse = ({ firstname, balance }: { firstname: string; balance: number }) => ({
+const parseResponse = ({
   firstname,
-  balance,
+  locked_offer,
+}: {
+  firstname: string
+  locked_offer: LockedOffer
+}) => ({
+  firstname,
+  lockedOffer: {
+    ...locked_offer,
+    expires_at: new Date(locked_offer.expires_at),
+    redeemed_at: new Date(locked_offer.redeemed_at),
+  },
   loggedIn: true,
 })
 
