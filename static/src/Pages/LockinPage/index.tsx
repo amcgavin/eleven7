@@ -1,10 +1,32 @@
 import * as React from 'react'
 import axios from 'axios'
-import { makeFormHandler } from 'src/State/forms'
+import makeFormHandler from 'src/State/forms'
+import { useLoggedIn, login } from 'src/State/auth'
 import { Button, Form, Header } from 'semantic-ui-react'
 
+interface Offer {
+  type: string
+  price: number
+  lat: number
+  lng: number
+}
+
+const LockedOffer = () => {
+  const { lockedOffer } = useLoggedIn()
+  if (!lockedOffer) return null
+  return (
+    <p>
+      current lock-in is {lockedOffer.status.toLocaleLowerCase()}.
+      <ul style={{ textAlign: 'left' }}>
+        <li>Cents per litre: {lockedOffer.cents_per_litre}</li>
+        <li>Expires at {`${lockedOffer.expires_at}`}</li>
+      </ul>
+    </p>
+  )
+}
+
 export default () => {
-  const [offers, setOffers] = React.useState([])
+  const [offers, setOffers] = React.useState<Offer[]>([])
   React.useEffect(() => {
     axios.get('/api/prices/').then(response => {
       setOffers(response.data.prices)
@@ -21,11 +43,13 @@ export default () => {
   )
   const [changeHandler, onSubmit, values, errors, submitting] = makeFormHandler(
     '/api/lockin/',
-    'lockin-form',
+    login,
   )
   const selectHandler = React.useCallback(
     (e, props) => {
-      const selected = props.options.find(offer => offer.value === props.value)
+      const selected = props.options.find(
+        (option: { offer: Offer; value: string }) => option.value === props.value,
+      )
       if (selected) {
         changeHandler(e, props)
         changeHandler(e, { name: 'expected_price', value: selected.offer.price })
@@ -37,7 +61,10 @@ export default () => {
   )
   return (
     <React.Fragment>
-      <Header as="h2" color="teal" textAlign="center" />
+      <Header as="h2" color="teal" textAlign="center">
+        Lock in
+      </Header>
+      <LockedOffer />
       <Form error loading={submitting} onSubmit={onSubmit} size="large">
         <Form.Select
           options={formattedOffers}

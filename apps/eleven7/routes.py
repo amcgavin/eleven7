@@ -38,7 +38,8 @@ def login():
     except Exception:
         raise ValidationError(dict(email=["Incorrect email or password"]))
     session["user"] = user.asdict()
-    return dict(firstname=user.firstname, balance=user.balance)
+    locked_offer = client.current_lock(user)
+    return dict(firstname=user.firstname, locked_offer=locked_offer.serialise())
 
 
 @app.route("/details/", methods=["GET"])
@@ -47,7 +48,10 @@ def account_details():
     user = session.get("user", None)
     if not user:
         raise UnauthenticatedError()
-    return dict(firstname=user["firstname"], balance=user["balance"])
+    user = User(**user)
+    client = Eleven7Client()
+    locked_offer = client.current_lock(user)
+    return dict(firstname=user.firstname, locked_offer=locked_offer.serialise())
 
 
 @app.route("/prices/", methods=["GET"])
@@ -74,6 +78,8 @@ def lockin():
         form.expected_price.data,
         Location(lat=form.lat.data, lng=form.lng.data),
     )
+    locked_offer = client.current_lock(user)
+    return dict(firstname=user.firstname, locked_offer=locked_offer.serialise())
 
 
 @app.route("/update/", methods=["GET"])

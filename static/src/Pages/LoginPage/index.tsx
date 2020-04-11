@@ -1,15 +1,18 @@
 import * as React from 'react'
 import { Button, Form, Header } from 'semantic-ui-react'
-import { makeFormHandler } from 'src/State/forms'
+import makeFormHandler from 'src/State/forms'
+import { login } from 'src/State/auth'
 
 const LoginPage = () => {
   const [changeHandler, onSubmit, values, errors, submitting] = makeFormHandler(
     '/api/login/',
-    'login-form',
+    login,
   )
   return (
     <React.Fragment>
-      <Header as="h2" color="teal" textAlign="center" />
+      <Header as="h2" color="teal" textAlign="center">
+        Log into your 7Eleven Account
+      </Header>
       <Form error onSubmit={onSubmit} loading={submitting} size="large">
         <Form.Input
           name="email"
