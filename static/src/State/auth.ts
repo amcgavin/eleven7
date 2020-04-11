@@ -1,7 +1,5 @@
 import * as React from 'react'
-import { useSelector } from 'react-redux'
-import { useRequest } from './requests'
-import { FormActionType } from './forms'
+import axios from 'axios'
 
 interface LockedOffer {
   status: string
@@ -13,59 +11,64 @@ interface LockedOffer {
 }
 
 interface AuthState {
-  email: string
+  firstname: string
   loggedIn: boolean
   lockedOffer?: LockedOffer
 }
 
-const initialState = {
-  email: '',
-  loggedIn: false,
+const state: { user: AuthState; loaded: boolean } = {
+  user: { firstname: '', loggedIn: false },
+  loaded: false,
 }
 
-const REQUEST_UPDATE = 'auth-request-update'
+const listeners = []
 
-export const useIsAuth = () => {
-  const [loading, submit] = useRequest(REQUEST_UPDATE, undefined, 'auth')
-  const loggedIn = useSelector(state => state.auth.loggedIn)
-  React.useEffect(() => {
-    submit({
-      method: 'get',
-      url: '/api/details/',
-    })
-  }, [])
-  return [loading, loggedIn]
+const notify = user => {
+  listeners.forEach(l => l(user))
 }
 
-const parseResponse = ({
+export const login = ({
   firstname,
   locked_offer,
 }: {
   firstname: string
   locked_offer: LockedOffer
-}) => ({
-  firstname,
-  lockedOffer: {
-    ...locked_offer,
-    expires_at: new Date(locked_offer.expires_at),
-    redeemed_at: new Date(locked_offer.redeemed_at),
-  },
-  loggedIn: true,
-})
-
-export const reducer = (state: AuthState = initialState, action) => {
-  switch (action.type) {
-    case FormActionType.REQUEST_UPDATE:
-      if (action.actionProps === 'login-form' && action.status === 'success') {
-        return parseResponse(action.response.data)
-      }
-      return state
-    case REQUEST_UPDATE:
-      if (action.status === 'success') {
-        return parseResponse(action.response.data)
-      }
-      return state
-    default:
-      return state
+}) => {
+  state.user = {
+    firstname,
+    lockedOffer: {
+      ...locked_offer,
+      expires_at: new Date(locked_offer.expires_at),
+      redeemed_at: new Date(locked_offer.redeemed_at),
+    },
+    loggedIn: true,
   }
+  notify(state.user)
+}
+
+export const logout = () => {
+  state.user = { firstname: '', loggedIn: false }
+  notify(state.user)
+}
+
+export const useLoggedIn = () => {
+  const [user, setUser] = React.useState(state.user)
+  React.useEffect(() => {
+    if (!state.loaded) {
+      state.loaded = true
+      axios
+        .get('/api/details/')
+        .then(response => {
+          login(response.data)
+        })
+        .catch(() => {
+          // nothing to catch - failed login
+        })
+    }
+    listeners.push(setUser)
+    return () => {
+      listeners.slice(listeners.indexOf(setUser), 1)
+    }
+  }, [setUser])
+  return user
 }

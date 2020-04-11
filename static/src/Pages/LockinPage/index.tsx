@@ -1,8 +1,8 @@
 import * as React from 'react'
 import axios from 'axios'
-import { makeFormHandler } from 'src/State/forms'
+import makeFormHandler from 'src/State/forms'
+import { useLoggedIn, login } from 'src/State/auth'
 import { Button, Form, Header } from 'semantic-ui-react'
-import useLocalSelector from 'src/State/useLocalSelector'
 
 interface Offer {
   type: string
@@ -12,14 +12,14 @@ interface Offer {
 }
 
 const LockedOffer = () => {
-  const offer = useLocalSelector('auth', state => state.lockedOffer)
-  if (!offer) return null
+  const { lockedOffer } = useLoggedIn()
+  if (!lockedOffer) return null
   return (
     <p>
-      current lock-in is {offer.status.toLocaleLowerCase()}.
+      current lock-in is {lockedOffer.status.toLocaleLowerCase()}.
       <ul style={{ textAlign: 'left' }}>
-        <li>Cents per litre: {offer.cents_per_litre}</li>
-        <li>Expires at {`${offer.expires_at}`}</li>
+        <li>Cents per litre: {lockedOffer.cents_per_litre}</li>
+        <li>Expires at {`${lockedOffer.expires_at}`}</li>
       </ul>
     </p>
   )
@@ -43,7 +43,7 @@ export default () => {
   )
   const [changeHandler, onSubmit, values, errors, submitting] = makeFormHandler(
     '/api/lockin/',
-    'lockin-form',
+    login,
   )
   const selectHandler = React.useCallback(
     (e, props) => {
