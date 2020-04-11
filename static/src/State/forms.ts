@@ -1,44 +1,29 @@
 import * as React from 'react'
-import { useDispatch } from 'react-redux'
-import { useRequest } from './requests'
-import useLocalSelector from './useLocalSelector'
+import axios from 'axios'
 
-export enum FormActionType {
-  SET = 'forms-set',
-  REQUEST_UPDATE = 'forms-request-update',
-}
-
-interface FormAction {
-  type: FormActionType
-  formId: string
-}
-
-interface FormState {
-  [formId: string]: {
-    values: {
-      [name: string]: string
-    }
-    errors: {
-      [key: string]: string
-    }
-  }
-}
-const getForm = (formId: string) => state => state[formId] || {}
-const getFormValues = form => form.values || {}
-const getFormErrors = form => form.errors || {}
-
-export const makeFormHandler = (url: string, formId) => {
-  const [loading, submit] = useRequest(FormActionType.REQUEST_UPDATE, formId)
-  const dispatch = useDispatch()
-  const form = useLocalSelector('forms', getForm(formId))
-  const values = getFormValues(form)
-  const errors = getFormErrors(form)
-  const changeHandler = React.useCallback(
-    (_, { name, value }) => {
-      dispatch({ type: FormActionType.SET, formId, name, value })
+const makeFormHandler = (url, submitHandler) => {
+  const [formState, dispatch] = React.useReducer(
+    (state, action) => {
+      switch (action.type) {
+        case 'set':
+          return { ...state, values: { ...state.values, [action.key]: action.value } }
+        case 'clear':
+          return { values: {}, errors: {} }
+        case 'submit':
+          return { ...state, errors: {}, loading: true }
+        case 'finish-submit':
+          return { ...state, loading: false }
+        case 'set-error':
+          return { ...state, errors: { ...action.errors } }
+        default:
+          return state
+      }
     },
-    [dispatch, formId],
+    { values: {}, errors: {}, loading: false },
   )
+  const changeHandler = React.useCallback(e => {
+    dispatch({ type: 'set', key: e.target.name, value: e.target.value })
+  }, [])
 
   const onSubmit = React.useCallback(
     e => {
@@ -51,51 +36,21 @@ export const makeFormHandler = (url: string, formId) => {
         }),
         {},
       )
-      submit({
-        method: 'POST',
-        url,
-        data,
-      })
-    },
-    [url, formId, submit],
-  )
-  return [changeHandler, onSubmit, values, errors, loading]
-}
-
-export const reducer = (state: FormState = {}, action: FormAction) => {
-  switch (action.type) {
-    case FormActionType.SET:
-      return {
-        ...state,
-        [action.formId]: {
-          ...state[action.formId],
-          values: { ...getFormValues(getForm(action.formId)(state)), [action.name]: action.value },
-        },
-      }
-    case FormActionType.REQUEST_UPDATE:
-      switch (action.status) {
-        case 'success':
-          return { ...state, [action.actionProps]: { values: {}, errors: {} } }
-        case 'error':
-          if (action.response)
-            return {
-              ...state,
-              [action.actionProps]: {
-                ...state[action.actionProps],
-                errors: { ...action.response.errors },
-              },
-            }
-          return {
-            ...state,
-            [action.actionProps]: {
-              ...state[action.actionProps],
-              errors: { __all__: ['An error occurred, please refresh the page and try again.'] },
-            },
+      dispatch({ type: 'submit' })
+      axios
+        .post(url, data)
+        .then(response => submitHandler(response.data))
+        .catch(error => {
+          if (error.response.status === 400) {
+            dispatch({ type: 'set-error', errors: error.response.data.errors })
           }
-        default:
-          return state
-      }
-    default:
-      return state
-  }
+        })
+        .then(() => {
+          dispatch({ type: 'finish-submit' })
+        })
+    },
+    [url, submitHandler],
+  )
+  return [changeHandler, onSubmit, formState.values, formState.errors, formState.loading]
 }
+export default makeFormHandler

@@ -2,7 +2,7 @@ import * as React from 'react'
 import { BrowserRouter, Switch } from 'react-router-dom'
 import { Grid } from 'semantic-ui-react'
 import LoginPage from './Pages/LoginPage'
-import HomePage from './Pages/HomePage'
+import HomePage from './Pages/LockinPage'
 import { AuthenticatedRoute, UnauthenticatedRoute } from './Routing'
 
 export default () => {
