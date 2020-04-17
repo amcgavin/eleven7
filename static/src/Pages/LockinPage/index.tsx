@@ -51,10 +51,10 @@ export default () => {
         (option: { offer: Offer; value: string }) => option.value === props.value,
       )
       if (selected) {
-        changeHandler(e, props)
-        changeHandler(e, { name: 'expected_price', value: selected.offer.price })
-        changeHandler(e, { name: 'lat', value: selected.offer.lat })
-        changeHandler(e, { name: 'lng', value: selected.offer.lng })
+        changeHandler({ name: 'fuel_type', value: selected.offer.type })
+        changeHandler({ name: 'expected_price', value: selected.offer.price })
+        changeHandler({ name: 'lat', value: selected.offer.lat })
+        changeHandler({ name: 'lng', value: selected.offer.lng })
       }
     },
     [changeHandler],

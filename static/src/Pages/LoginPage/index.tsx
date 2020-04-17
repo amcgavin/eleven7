@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Button, Form, Header } from 'semantic-ui-react'
-import makeFormHandler from 'src/State/forms'
+import makeFormHandler, { makeInputHandler } from 'src/State/forms'
 import { login } from 'src/State/auth'
 
 const LoginPage = () => {
@@ -8,6 +8,7 @@ const LoginPage = () => {
     '/api/login/',
     login,
   )
+  const onChange = makeInputHandler(changeHandler)
   return (
     <React.Fragment>
       <Header as="h2" color="teal" textAlign="center">
@@ -16,7 +17,7 @@ const LoginPage = () => {
       <Form error onSubmit={onSubmit} loading={submitting} size="large">
         <Form.Input
           name="email"
-          onChange={changeHandler}
+          onChange={onChange}
           value={values.email || ''}
           error={errors.email}
           fluid
@@ -28,7 +29,7 @@ const LoginPage = () => {
           name="password"
           value={values.password || ''}
           error={errors.password}
-          onChange={changeHandler}
+          onChange={onChange}
           fluid
           icon="lock"
           iconPosition="left"

@@ -1,6 +1,18 @@
 import * as React from 'react'
 import axios from 'axios'
 
+interface ChangeEvent {
+  name: string
+  value: string
+}
+export const makeInputHandler = changeHandler => {
+  return React.useCallback(
+    e => {
+      changeHandler({ name: e.target.name, value: e.target.value })
+    },
+    [changeHandler],
+  )
+}
 const makeFormHandler = (url, submitHandler) => {
   const [formState, dispatch] = React.useReducer(
     (state, action) => {
@@ -21,8 +33,8 @@ const makeFormHandler = (url, submitHandler) => {
     },
     { values: {}, errors: {}, loading: false },
   )
-  const changeHandler = React.useCallback(e => {
-    dispatch({ type: 'set', key: e.target.name, value: e.target.value })
+  const changeHandler = React.useCallback((e: ChangeEvent) => {
+    dispatch({ type: 'set', key: e.name, value: e.value })
   }, [])
 
   const onSubmit = React.useCallback(
